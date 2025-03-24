@@ -7,13 +7,9 @@ pygwalker
 # Data file handling
 chardet
 openpyxl
-xlrd
 
-# Visualization libraries
 seaborn
 matplotlib
-graphviz
-pygraphviz
 
 # Data processing
 python-dateutil
