@@ -43,14 +43,12 @@ uploaded_file = st.sidebar.file_uploader(
     type=['csv', 'xls', 'xlsx']
 )
 
-# Use sample data if no file uploaded, otherwise use uploaded file
+# Initialize DataFrame
+df = None
+
+# Load data if a file is uploaded
 if uploaded_file is not None:
     df = load_data(uploaded_file)
-    if df is None:
-        st.error("Upload Data In Sidebar '>'")  # Stop execution if there was an error loading the file
-      
-    df = load_sample_data()
-    st.sidebar.info("Using sample data. Upload a file to visualize your own data.")
 
 # Sidebar visualization options
 st.sidebar.title("Visualization Options")
@@ -67,27 +65,28 @@ if df is not None:
     if st.sidebar.checkbox("Show Data Preview"):
         st.sidebar.dataframe(df.head())
 
-if option == "Interactive Visualizer":
-    if df is not None:
+# Main content area based on selected visualization option
+if df is not None:
+    if option == "Interactive Visualizer":
+        st.header("Interactive Data Explorer")
+        
         # Initialize PyGWalker renderer with caching
         @st.cache_resource
-        def get_pyg_renderer():
-            return StreamlitRenderer(df, spec="./gw_config.json", spec_io_mode="rw")
+        def get_pyg_renderer(data_frame):
+            return StreamlitRenderer(data_frame, spec="./gw_config.json", spec_io_mode="rw")
         
-        renderer = get_pyg_renderer()
+        renderer = get_pyg_renderer(df)
         
         # Create tabs
         tab1, tab2 = st.tabs(["Interactive Explorer", "Export Options"])
         
         with tab1:
-            st.header("Interactive Data Explorer")
             renderer.explorer(height=800)
         
         with tab2:
             st.header("Export Options")
             
             # HTML Export Section
-            st.subheader("Export to HTML")
             html = pyg.to_html(df)
             
             st.download_button(
@@ -100,15 +99,16 @@ if option == "Interactive Visualizer":
             # Show HTML preview
             if st.checkbox("Show HTML Preview"):
                 st.components.v1.html(html, height=600, scrolling=True)
-    else:
-        st.warning("No data available for visualization. Please upload a valid data file.")
 
-elif option == "Graphviz Charts":
-    st.title("Graphviz Charts")
-    st.write("Graphviz chart functionality would go here")
-    # Add your Graphviz implementation here
+    elif option == "Graphviz Charts":
+        st.title("Graphviz Charts")
+        st.write("Graphviz chart functionality would go here")
+        # Add your Graphviz implementation here
 
-elif option == "Seaborn Charts":
-    st.title("Seaborn Charts")
-    st.write("Seaborn chart functionality would go here")
-    # Add your Seaborn implementation here
+    elif option == "Seaborn Charts":
+        st.title("Seaborn Charts")
+        st.write("Seaborn chart functionality would go here")
+        # Add your Seaborn implementation here
+else:
+    # If no file is uploaded, display a message in the main body
+    st.warning("No file uploaded. Please upload a valid data file to proceed.")
