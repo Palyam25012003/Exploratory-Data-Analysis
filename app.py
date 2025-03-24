@@ -19,8 +19,6 @@ def detect_encoding(uploaded_file):
     uploaded_file.seek(0)  # Reset file pointer
     return result['encoding']
 
-# Function to load data based on file type
-@st.cache_data
 def load_data(uploaded_file):
     try:
         if uploaded_file.name.endswith('.csv'):
