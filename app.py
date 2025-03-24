@@ -34,9 +34,11 @@ def load_data(uploaded_file):
         st.error(f"Error loading file: {str(e)}")
         return None
 
-# Sidebar file uploader
-st.sidebar.title("Data Upload")
-uploaded_file = st.sidebar.file_uploader(
+# Main content area
+st.title("Interactive Data Visualization Dashboard")
+
+# File uploader in the main bar
+uploaded_file = st.file_uploader(
     "Upload your data file (CSV or Excel)",
     type=['csv', 'xls', 'xlsx']
 )
@@ -48,64 +50,38 @@ df = None
 if uploaded_file is not None:
     df = load_data(uploaded_file)
 
-# Sidebar visualization options
-st.sidebar.title("Visualization Options")
-option = st.sidebar.selectbox(
-    "Choose Visualization Type",
-    ["Interactive Visualizer", "Graphviz Charts", "Seaborn Charts"]
-)
-
-# Display data info
-st.sidebar.subheader("Data Info")
+# Display PyGWalker explorer if data is loaded
 if df is not None:
-    st.sidebar.write(f"Rows: {len(df)}")
-    st.sidebar.write(f"Columns: {len(df.columns)}")
+    st.header("Interactive Data Explorer")
     
+    # Initialize PyGWalker renderer with caching
+    @st.cache_resource
+    def get_pyg_renderer(data_frame):
+        return StreamlitRenderer(data_frame, spec="./gw_config.json", spec_io_mode="rw")
+    
+    renderer = get_pyg_renderer(df)
+    
+    # Render the PyGWalker explorer
+    renderer.explorer()
 
-# Main content area based on selected visualization option
-if df is not None:
-    if option == "Interactive Visualizer":
-        st.header("Interactive Data Explorer")
-        
-        # Initialize PyGWalker renderer with caching
-        @st.cache_resource
-        def get_pyg_renderer(data_frame):
-            return StreamlitRenderer(data_frame, spec="./gw_config.json", spec_io_mode="rw")
-        
-        renderer = get_pyg_renderer(df)
-        
-        # Create tabs
-        tab1, tab2 = st.tabs(["Interactive Explorer", "Export Options"])
-        
-        with tab1:
-            renderer.explorer()
-        
-        with tab2:
-            st.header("Export Options")
-            
-            # HTML Export Section
-            html = pyg.to_html(df)
-            
-            st.download_button(
-                label="Download HTML",
-                data=html,
-                file_name="pygwalker_export.html",
-                mime="text/html"
-            )
-            
-            # Show HTML preview
-            if st.checkbox("Show HTML Preview"):
-                st.components.v1.html(html, height=600, scrolling=True)
+    # Export to HTML section
+    st.header("Export Visualization")
+    
+    # Generate HTML for the visualization
+    html = pyg.to_html(df)
+    
+    # Download button for exporting the HTML
+    st.download_button(
+        label="Download HTML",
+        data=html,
+        file_name="pygwalker_export.html",
+        mime="text/html"
+    )
+    
+    # Show HTML preview
+    if st.checkbox("Show HTML Preview"):
+        st.components.v1.html(html, height=600, scrolling=True)
 
-    elif option == "Graphviz Charts":
-        st.title("Graphviz Charts")
-        st.write("Graphviz chart functionality would go here")
-        # Add your Graphviz implementation here
-
-    elif option == "Seaborn Charts":
-        st.title("Seaborn Charts")
-        st.write("Seaborn chart functionality would go here")
-        # Add your Seaborn implementation here
 else:
     # If no file is uploaded, display a message in the main body
     st.warning("No file uploaded. Please upload a valid data file to proceed.")
