@@ -62,8 +62,7 @@ st.sidebar.subheader("Data Info")
 if df is not None:
     st.sidebar.write(f"Rows: {len(df)}")
     st.sidebar.write(f"Columns: {len(df.columns)}")
-    if st.sidebar.checkbox("Show Data Preview"):
-        st.sidebar.dataframe(df.head())
+    
 
 # Main content area based on selected visualization option
 if df is not None:
@@ -81,7 +80,7 @@ if df is not None:
         tab1, tab2 = st.tabs(["Interactive Explorer", "Export Options"])
         
         with tab1:
-            renderer.explorer(height=800)
+            renderer.explorer()
         
         with tab2:
             st.header("Export Options")
